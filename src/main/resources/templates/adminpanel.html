@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>FX Trading</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="profitValuation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.5/sockjs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" th:href="@{'/'}">Forex Trading</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarColor02">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" th:href="@{'/'}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <li class="nav-item dropdown active">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
+                    Transactions
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" th:href="@{'/opentransactions'}">Open transactions</a>
+                    <a class="dropdown-item" th:href="@{'/closedtransactions'}">Closed transactions</a>
+                </div>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <li class="nav-item active">
+                <a class="nav-link" th:href="@{'/accountDetails'}">Account details</a>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <!-- <li class="nav-item dropdown active">
+                <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                    Messages menu
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item"  th:href="@{'/newMessage'}">New Message</a>
+                    <hr>
+                    <a class="dropdown-item" th:href="@{'/inbox'}">Inbox</a>
+                    <a class="dropdown-item" th:href="@{'/outbox'}">Outbox</a>
+                </div>
+            </li> -->
+            <li th:if="${isUserAdmin}" class="nav-item active">
+                <a th:href="@{'/adminpanel'}" class="btn btn-outline-light my-2 my-sm-0">Admin Panel</a>
+            </li>
+        </ul>
+        <form class="form-inline">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" th:href="@{'/usersRanking'}">Users ranking</a>
+                </li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Balance: ' + ${#numbers.formatDecimal(loggedUserBalance, 1, 'COMMA',2, 'POINT')} + ' USD'">Balance: [nominal]</a></li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Blocked: ' + ${#numbers.formatDecimal(loggedUserBlockedAmount, 1, 'COMMA', 2, 'POINT')} + ' USD'">Blocked: [nominal]</a></li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Hello ' + ${loggedUser}+'!'">Welcome: [username]</a></li>
+            </ul>
+            <a th:href="@{'/logout'}" class="btn btn-outline-light my-2 my-sm-0">Log out</a>
+        </form>
+    </div>
+</nav>
+
+
+<div class="container">
+    <h1 class="w-90 p-3 align-content-center">Platform Settings</h1>
+    <div th:if="${updateSettingsResult == 1}" class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Settings update failed
+    </div>
+    <div th:if="${updateSettingsResult == 2}" class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Settings updated successfully
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <form method="post" th:action="@{/updatePlatformSettings}"
+                  th:object="${platformSettings}" role="form">
+                <h5 class="w-90 p-3 align-content-center">Decision Time:</h5>
+                <div class="form-group">
+                    <input th:field="*{decisionTime}" type="number" name="decisionTime" id="decisionTime" tabindex="1" class="form-control" th:placeholder="#{platformSettings.decisionTime}" value=""/>
+                    <p class="error" th:if="${#fields.hasErrors('decisionTime')}" th:errors="*{decisionTime}">Incorrect value</p>
+                </div>
+                <h5 class="w-90 p-3 align-content-center">Minimum Trade Amount:</h5>
+                <div class="form-group">
+                    <input th:field="*{minimumTradeAmount}" type="number" id="minimumTradeAmount" tabindex="1" class="form-control" th:placeholder="#{platformSettings.minimumTradeAmount}" value=""/>
+                    <p class="error" th:if="${#fields.hasErrors('minimumTradeAmount')}" th:errors="*{minimumTradeAmount}">Incorrect value</p>
+                </div>
+                <h5 class="w-90 p-3 align-content-center">Maximum Trade Amount:</h5>
+                <div class="form-group">
+                    <input th:field="*{maximumTradeAmount}" type="number" name="maximumTradeAmount" id="maximumTradeAmount" tabindex="1" class="form-control" th:placeholder="#{platformSettings.maximumTradeAmount}" value=""/>
+                    <p class="error" th:if="${#fields.hasErrors('maximumTradeAmount')}" th:errors="*{maximumTradeAmount}">Incorrect value</p>
+                    <p class="error" th:if="${wrongMaximumTradeAmount}">Maximum trade amount must be higher or equal to minimum trade amount</p>
+                </div>
+                <h5 class="w-90 p-3 align-content-center">Initial balance for new account:</h5>
+                <div class="form-group">
+                    <input th:field="*{initialBalance}" type="number" id="initialBalance" tabindex="1" class="form-control" th:placeholder="#{platformSettings.initialBalance}" value=""/>
+                    <p class="error" th:if="${#fields.hasErrors('initialBalance')}" th:errors="*{initialBalance}">Incorrect value</p>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="form-control btn btn-success" value="Save platform settings">
+                </div>
+            </form>
+        </div>
+    </div>
+            <hr>
+    <h1 class="w-90 p-3 align-content-center">Update users</h1>
+    <div th:if="${updateUserBalanceResult == 1}" class="alert alert-danger alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        User balance update failed
+    </div>
+    <div th:if="${updateUserBalanceResult == 2}" class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        User balance updated successfully. User notified.
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <form method="post" th:action="@{'/updateUser'}"
+                  th:object="${user}" role="form" style="display: block;">
+                <h5 class="w-90 p-3 align-content-center">Choose user</h5>
+                <div class="form-group">
+                    <select class="form-control" th:field="*{id}">
+                        <option th:each="user : ${allUsers}"
+                                th:value="${user.id}"
+                                th:text="${user.username}+ ' - current balance: '+ ${user.balance}">username and user balance</option>
+                    </select>
+                </div>
+                <hr>
+                <h5 class="w-90 p-3 align-content-center">New balance</h5>
+                    <div class="form-group">
+                        <input th:field="*{balance}" type="number" id="balance" tabindex="1" class="form-control" th:placeholder="#{platformSettings.initialBalance}" value=""/>
+                        <p class="error" th:if="${#fields.hasErrors('balance')}" th:errors="*{balance}">Incorrect value</p>
+                    </div>
+                <div class="form-group">
+                    <input type="submit" class="form-control btn btn-success" value="Update user">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

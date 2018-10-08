@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <title>FX Trading</title>
+</head>
+<body>
+
+<div id="main-content" class="container">
+    <h2 class="bg-info text-center"> This is page for FX Trading performance test purposes</h2>
+        <div class="row">
+            <div class="col-md-4" th:each="instrument : ${instruments}">
+    <p th:text="${instrument.description}" class="bg-dark text-center"></p>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Offer</th>
+            <th>Bid</th>
+        </thead>
+        <tbody>
+        <tr th:each="singlequote : ${quotations}" class="active">
+                <span th:if="${singlequote.instrument.description == instrument.description}">
+                    <td th:text="${singlequote.date}">"</td>
+                    <td th:text="${singlequote.time}">"</td>
+                    <td th:text="${singlequote.askPriceBucket.price}"></td>
+                    <td th:text="${singlequote.bidPriceBucket.price}">"</td>
+                    </span>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+</div>
+</body>
+</html>

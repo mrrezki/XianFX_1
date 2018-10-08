@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>FX Trading</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="login.css">
+
+</head>
+<body>
+<style>
+    .error {
+        color: red;
+    }
+</style>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-login">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-sm-6 col-sm-offset-3">
+                            <a th:href="@{'/login'}" class="active" id="login-form-link">Login</a>
+                        </div>
+                        <!-- <div class="col-xs-6">
+                            <a th:href="@{'/registration'}" id="register-form-link">Register</a>
+                        </div> -->
+                    </div>
+                    <hr>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <form method="post" id="login-form" th:action="@{/login}"  role="form" style="display: block;">
+                                <div th:if="${param.error}" class="alert alert-danger">
+                                    Invalid username or password.
+                                </div>
+                                <div th:if="${param.logout}" class="alert alert-success">
+                                    You have been logged out.
+                                </div>
+                                <div th:if="${registrationResult == 1}" class="alert alert-success">
+                                    User registered successfully
+                                </div>
+                                <div class="form-group">
+                                    <!-- <input path="username" type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Email" value="michal.lipski2@gmail.com"/> -->
+                                    <input path="username" type="text" name="username" id="username" tabindex="1" class="form-control" placeholder="Email" value=""/>                                    
+                                </div>
+                                <div class="form-group">
+                                    <!-- <input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password" value="123123"> -->
+                                    <input type="password" name="password" id="password" tabindex="2" class="form-control" placeholder="Password" value="">
+                                </div>
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-6 col-sm-offset-3">
+                                            <input type="submit" name="login-submit" id="login-submit" tabindex="4" class="form-control btn btn-login" value="Log In">
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

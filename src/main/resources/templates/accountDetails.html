@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>FX Trading</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <script src="profitValuation.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.5/sockjs.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3mobile.css">
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" th:href="@{'/'}">FX Trading</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarColor02">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" th:href="@{'/'}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <li class="nav-item dropdown active">
+                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
+                    Transactions
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" th:href="@{'/opentransactions'}">Open transactions</a>
+                    <a class="dropdown-item" th:href="@{'/closedtransactions'}">Closed transactions</a>
+                </div>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <li class="nav-item active">
+                <a class="nav-link" th:href="@{'/accountDetails'}">Account details</a>
+            </li>
+            <!-- <li class="nav-item active"><a class="nav-link">|</a></li> -->
+            <!-- <li class="nav-item dropdown active">
+                <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                    Messages menu
+                </a>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" th:href="@{'/newMessage'}">New Message</a>
+                    <hr>
+                    <a class="dropdown-item" th:href="@{'/inbox'}">Inbox</a>
+                    <a class="dropdown-item" th:href="@{'/outbox'}">Outbox</a>
+                </div>
+            </li> -->
+        </ul>
+        <form class="form-inline">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" th:href="@{'/usersRanking'}">Users Ranking</a>
+                </li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Balance: ' + ${#numbers.formatDecimal(loggedUserBalance, 1, 'COMMA',2, 'POINT')} + ' USD'">Balance: [nominal]</a></li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Blocked: ' + ${#numbers.formatDecimal(loggedUserBlockedAmount, 1, 'COMMA', 2, 'POINT')} + ' USD'">Blocked: [nominal]</a></li>
+                <li class="nav-item active"><a class="nav-link"  th:text="'Hello ' + ${loggedUser.username}+'!'">Welcome: [username]</a></li>
+            </ul>
+            <a th:href="@{'/logout'}" class="btn btn-outline-light my-2 my-sm-0">Log out</a>
+        </form>
+    </div>
+</nav>
+
+<div id="main-content" class="container">
+    <hr>
+    <div class="row">
+        <div class="col-4">
+            <div class="list-group" id="list-tab" role="tablist">
+                <a class="list-group-item list-group-item-action active" id="list-home-list" data-toggle="list" href="#list-home" role="tab" aria-controls="home">Account details</a>
+                <a class="list-group-item list-group-item-action" id="list-profile-list" data-toggle="list" href="#list-profile" role="tab" aria-controls="profile">Transactions summary</a>
+                <!-- <a class="list-group-item list-group-item-action" id="list-messages-list" data-toggle="list" href="#list-messages" role="tab" aria-controls="messages">About Forex project</a> -->
+            </div>
+        </div>
+        <div class="col-8">
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+                    <div class="card-body">
+                        <h3 class="card-title">Account details</h3>
+                        <p class="card-text">
+                        <ul>
+                            <li th:text="'User name: ' + ${loggedUser.username}">User name</li>
+                            <li th:text="'Email: ' + ${loggedUser.email}">Email</li>
+                            <li th:text="'Created: ' + ${loggedUser.created}">Created</li>
+                        </ul>
+                        </p>
+                        <a th:href="@{'/'}" class="btn btn-primary">Go to pricing page</a>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">
+                    <div class="card-body">
+                        <h3 class="card-title">Transactions summary</h3>
+                        <p class="card-text">
+                        <ul>
+                            <li th:text="'All transactions: ' + ${countOpenTrades + countClosedTrades}">All transactions</li>
+                            <li th:text="'Open transactions: ' + ${countOpenTrades}">Open transactions</li>
+                            <li th:text="'Closed transactions: ' + ${countClosedTrades}">Closed transactions</li>
+                            <li th:text="'Closed profitable transactions: ' + ${countProfitableTrades}">Profitable transactions</li>
+                            <li th:text="'Closed losing transactions: ' +  ${countLosingTrades} + ' (includes 0 USD profit)'">Losing transactions</li>
+                            <li th:text="'Overall closed profit: ' + ${#numbers.formatDecimal(allProfit, 1, 'COMMA',2, 'POINT')} + ' USD'">Overall profit</li>
+                            <li th:text="'Current balance: ' + ${#numbers.formatDecimal(loggedUserBalance, 1, 'COMMA',2, 'POINT')} + ' USD'">Current balance</li>
+                            <li th:text="'Current blocked amount: ' + ${#numbers.formatDecimal(loggedUserBlockedAmount, 1, 'COMMA', 2, 'POINT')} + ' USD'">Current blocked amount</li>
+                        </ul>
+                        </p>
+                        <a th:href="@{'/opentransactions'}" class="btn btn-primary">Open Transactions</a> <a th:href="@{'/closedtransactions'}" class="btn btn-primary">Closed transactions</a>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
+                    <div class="card-body">
+                        <h3 class="card-title">About Forex project</h3>
+                        <p class="card-text">The <b>FX Trading</b> project is result of broad investment banking knowledge and software engineering passion.</p>
+                        <p class="card-text">Platform allows you to execute demonstration trades on fx currencies market and check your investment skills.</p>
+                        <p class="card-text"><b>Core functionality:</b>
+                        <ul>
+                                <li>Websocket interbank fx price streaming</li>
+                                <li>Transactions excecution including balance validation</li>
+                                <li>Open Transactions valuation</li>
+                                <li>Computing overall profit of closed transactions</li>
+                                <li>Logging and registering users </li>
+                                <li>Interbank currency prices provided by Oanda Forex Broker</li>
+                            </ul>
+                        </p>
+                        <p><a href="https://github.com/mlipski00/ForeignExchangePlatform" class="card-text">GitHub: <b>https://github.com/mlipski00/ForeignExchangePlatform</b></a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
